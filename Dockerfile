@@ -1,5 +1,8 @@
+# Truco para que GitHub no altere el código
+ARG REPO=mcr.microsoft.com
+
 # 1. Etapa de compilación utilizando el SDK de .NET
-FROM ://microsoft.com AS build-env
+FROM ${REPO}/dotnet/sdk:10.0 AS build-env
 WORKDIR /app
 
 # Copiar archivos y restaurar dependencias
@@ -12,7 +15,7 @@ COPY . ./
 RUN dotnet publish -c Release -o out
 
 # 2. Etapa de ejecución utilizando el entorno ligero de ASP.NET Core
-FROM ://microsoft.com
+FROM ${REPO}/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build-env /app/out .
 
