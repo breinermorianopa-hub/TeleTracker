@@ -1,3 +1,7 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TeleTracker.Data;
@@ -14,7 +18,16 @@ namespace TeleTracker.Controllers
             _context = context;
         }
 
+        // GET: /Usuarios (Solo accesible para Administradores)
+        [Authorize(Roles = "1")]
+        public async Task<IActionResult> Index()
+        {
+            var usuarios = await _context.Usuarios.ToListAsync();
+            return View(usuarios);
+        }
+
         // GET: /Usuarios/Login
+        [AllowAnonymous]
         public IActionResult Login()
         {
             return View();
@@ -22,6 +35,7 @@ namespace TeleTracker.Controllers
 
         // POST: /Usuarios/Login
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(string email, string password)
         {
@@ -40,11 +54,40 @@ namespace TeleTracker.Controllers
                 return View();
             }
 
-            // Redirigir al inicio/dashboard tras iniciar sesión
+            // Crear las "claims" para identificar al usuario y su rol en la sesión
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
+                new Claim(ClaimTypes.Name, $"{usuario.Nombre} {usuario.Apellido}"),
+                new Claim(ClaimTypes.Email, usuario.Email),
+                new Claim(ClaimTypes.Role, usuario.RolId.ToString()) // Conserva 1=Admin, 2=Técnico, 3=Usuario
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = true // Mantiene la sesión activa según lo configurado en Program.cs
+            };
+
+            // Iniciar sesión emitiendo la Cookie
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties);
+
             return RedirectToAction("Index", "Home");
         }
 
+        // GET: /Usuarios/Logout
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Login", "Usuarios");
+        }
+
         // GET: /Usuarios/Registro
+        [AllowAnonymous]
         public IActionResult Registro()
         {
             return View();
@@ -52,6 +95,7 @@ namespace TeleTracker.Controllers
 
         // POST: /Usuarios/Registro
         [HttpPost]
+        [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Registro(Usuario usuario)
         {
@@ -64,7 +108,10 @@ namespace TeleTracker.Controllers
                     return View(usuario);
                 }
 
+                // Enforzar asignación de rol estándar
+                usuario.RolId = 3;
                 usuario.CreatedAt = DateTime.UtcNow;
+
                 _context.Usuarios.Add(usuario);
                 await _context.SaveChangesAsync();
 

@@ -1,8 +1,120 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Panel de Control";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container py-3">
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        <!-- Encabezado de Bienvenida -->
+        <div class="p-4 mb-4 bg-light rounded-3 border shadow-sm">
+            <div class="container-fluid py-2">
+                <h1 class="display-6 fw-bold text-primary">¡Bienvenido a TeleTracker, @User.Identity.Name!</h1>
+                <p class="col-md-10 fs-5 text-muted">
+                    Plataforma centralizada para la gestión de infraestructura de telecomunicaciones, control de usuarios y seguimiento de mantenimientos.
+                </p>
+            </div>
+        </div>
+
+        <!-- Opciones Rápidas según el Rol -->
+        <div class="row g-4">
+            @if (User.IsInRole("1")) // VISTA DE ADMINISTRADOR
+            {
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="fs-1 text-primary mb-2">👥</div>
+                            <h5 class="card-title fw-bold">Gestión de Usuarios</h5>
+                            <p class="card-text text-muted">Administra los accesos y roles de los usuarios del sistema.</p>
+                            <a asp-controller="Usuarios" asp-action="Index" class="btn btn-primary w-100">Administrar Usuarios</a>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 text-center pb-3">
+                            <small class="text-muted">Usuarios registrados: <strong>@(ViewBag.TotalUsuarios ?? 0)</strong></small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="fs-1 text-success mb-2">📡</div>
+                            <h5 class="card-title fw-bold">Gestión de Antenas</h5>
+                            <p class="card-text text-muted">Monitorea y registra la infraestructura de antenas activas.</p>
+                            <button class="btn btn-outline-success w-100" disabled>Próximamente</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="fs-1 text-warning mb-2">🛠️</div>
+                            <h5 class="card-title fw-bold">Mantenimientos</h5>
+                            <p class="card-text text-muted">Asigna y supervisa las órdenas de trabajo técnico.</p>
+                            <button class="btn btn-outline-warning w-100" disabled>Próximamente</button>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (User.IsInRole("2")) // VISTA DE TÉCNICO
+            {
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="fs-1 text-warning mb-2">🛠️</div>
+                            <h5 class="card-title fw-bold">Mis Mantenimientos</h5>
+                            <p class="card-text text-muted">Consulta las tareas de mantenimiento asignadas a tu cuenta.</p>
+                            <button class="btn btn-warning w-100" disabled>Próximamente</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="fs-1 text-success mb-2">📡</div>
+                            <h5 class="card-title fw-bold">Mapa de Antenas</h5>
+                            <p class="card-text text-muted">Visualiza el estado técnico de los nodos y antenas en campo.</p>
+                            <button class="btn btn-outline-success w-100" disabled>Próximamente</button>
+                        </div>
+                    </div>
+                </div>
+            }
+            else // VISTA DE USUARIO ESTÁNDAR (RolId = 3)
+            {
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="fs-1 text-info mb-2">📋</div>
+                            <h5 class="card-title fw-bold">Reportar Incidencia</h5>
+                            <p class="card-text text-muted">Crea un reporte si detectas una falla en alguna antena o servicio.</p>
+                            <button class="btn btn-info text-white w-100" disabled>Próximamente</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="fs-1 text-primary mb-2">📡</div>
+                            <h5 class="card-title fw-bold">Consulta de Red</h5>
+                            <p class="card-text text-muted">Revisa la cobertura y disponibilidad general del sistema.</p>
+                            <button class="btn btn-outline-primary w-100" disabled>Próximamente</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <!-- Vista Pública / Visitantes no Autenticados -->
+        <div class="text-center py-5">
+            <h1 class="display-4 fw-bold text-primary">TeleTracker</h1>
+            <p class="lead text-muted mb-4">Sistema de Monitoreo y Gestión de Infraestructura de Telecomunicaciones.</p>
+            <div>
+                <a asp-controller="Usuarios" asp-action="Login" class="btn btn-primary btn-lg me-2">Iniciar Sesión</a>
+                <a asp-controller="Usuarios" asp-action="Registro" class="btn btn-outline-secondary btn-lg">Registrarse</a>
+            </div>
+        </div>
+    }
 </div>

@@ -1,0 +1,80 @@
+@model IEnumerable<TeleTracker.Models.Antena>
+
+@{
+    ViewData["Title"] = "Gestión de Antenas";
+}
+
+<div class="container py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-0">Gestión de Antenas</h2>
+            <p class="text-muted mb-0">Monitoreo y administración del parque de antenas e infraestructura de red.</p>
+        </div>
+        @if (User.IsInRole("1"))
+        {
+            <a asp-action="Crear" class="btn btn-primary shadow-sm fw-semibold">
+                + Nueva Antena
+            </a>
+        }
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="ps-3">Código</th>
+                            <th>Nombre Estación</th>
+                            <th>Ubicación</th>
+                            <th>Tecnología</th>
+                            <th>Coordenadas (Lat, Long)</th>
+                            <th>Estado</th>
+                            <th class="text-end pe-3">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">
+                                    No hay antenas registradas en la plataforma.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-3 fw-bold text-primary">@item.Codigo</td>
+                                    <td class="fw-semibold">@item.Nombre</td>
+                                    <td>@(string.IsNullOrEmpty(item.Ubicacion) ? "N/A" : item.Ubicacion)</td>
+                                    <td><span class="badge bg-secondary">@item.Tecnologia</span></td>
+                                    <td><small class="text-muted">@item.Latitud, @item.Longitud</small></td>
+                                    <td>
+                                        @if (item.Estado == "OPERATIVA")
+                                        {
+                                            <span class="badge bg-success">Operativa</span>
+                                        }
+                                        else if (item.Estado == "MANTENIMIENTO")
+                                        {
+                                            <span class="badge bg-warning text-dark">Mantenimiento</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Inactiva</span>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <button class="btn btn-sm btn-outline-secondary" disabled>Detalles</button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

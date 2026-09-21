@@ -1,0 +1,113 @@
+@model IEnumerable<TeleTracker.Models.Mantenimiento>
+
+@{
+    ViewData["Title"] = "Gestión de Mantenimientos";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-tools"></i> Mantenimientos Programados</h2>
+        <a asp-action="Crear" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nuevo Mantenimiento
+        </a>
+    </div>
+
+    <!-- Filtro por Estado -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-center">
+                <div class="col-auto">
+                    <label class="col-form-label fw-bold">Filtrar por Estado:</label>
+                </div>
+                <div class="col-auto">
+                    <select name="estado" class="form-select" onchange="this.form.submit()">
+                        <option value="">Todos</option>
+                        <option value="Pendiente" selected="@(ViewBag.EstadoActual == "Pendiente")">Pendiente</option>
+                        <option value="En Proceso" selected="@(ViewBag.EstadoActual == "En Proceso")">En Proceso</option>
+                        <option value="Finalizado" selected="@(ViewBag.EstadoActual == "Finalizado")">Finalizado</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de Mantenimientos -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Antena</th>
+                        <th>Técnico Asignado</th>
+                        <th>Tipo</th>
+                        <th>Fecha Programada</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">
+                                No se encontraron registros de mantenimiento.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@(item.Antena != null ? item.Antena.Nombre : $"Antena #{item.IdAntena}")</strong>
+                                </td>
+                                <td>
+                                    @(item.Usuario != null ? $"{item.Usuario.Nombre} {item.Usuario.Apellido}" : "Sin Asignar")
+                                </td>
+                                <td>
+                                    <span class="badge @(item.Tipo == "Preventivo" ? "bg-info text-dark" : "bg-warning text-dark")">
+                                        @item.Tipo
+                                    </span>
+                                </td>
+                                <td>@item.FechaProgramada.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    @if (item.Estado == "Pendiente")
+                                    {
+                                        <span class="badge bg-secondary">Pendiente</span>
+                                    }
+                                    else if (item.Estado == "En Proceso")
+                                    {
+                                        <span class="badge bg-primary">En Proceso</span>
+                                    }
+                                    else if (item.Estado == "Finalizado")
+                                    {
+                                        <span class="badge bg-success">Finalizado</span>
+                                    }
+                                </td>
+                                <td>
+                                    <!-- Formulario para cambiar estado rápido -->
+                                    <form asp-action="CambiarEstado" method="post" class="d-inline">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        @if (item.Estado == "Pendiente")
+                                        {
+                                            <button type="submit" name="nuevoEstado" value="En Proceso" class="btn btn-sm btn-outline-primary">
+                                                Iniciar
+                                            </button>
+                                        }
+                                        else if (item.Estado == "En Proceso")
+                                        {
+                                            <button type="submit" name="nuevoEstado" value="Finalizado" class="btn btn-sm btn-outline-success">
+                                                Finalizar
+                                            </button>
+                                        }
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
