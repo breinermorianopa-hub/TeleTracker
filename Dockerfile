@@ -2,7 +2,7 @@
 FROM ://microsoft.com AS build-env
 WORKDIR /app
 
-# Copiar archivos y restaurar dependencias de la solución
+# Copiar archivos y restaurar dependencias
 COPY *.slnx ./
 COPY *.csproj ./
 RUN dotnet restore
@@ -16,7 +16,7 @@ FROM ://microsoft.com
 WORKDIR /app
 COPY --from=build-env /app/out .
 
-# Forzar el puerto correcto para Render
+# Forzar el puerto dinámico para Render
 ENV ASPNETCORE_URLS=http://+:10000
 
 ENTRYPOINT ["dotnet", "TeleTracker.dll"]
